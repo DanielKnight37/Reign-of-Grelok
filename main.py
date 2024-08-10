@@ -447,12 +447,12 @@ class Game:
                 self.grave_text = True
                 Text.draw_tooltip(grave_t_II)
                 self.display_text()
-                if priestQuest is True:
+                if priestQuest and g_VI in grave_text:
                     grave_text.remove(g_VI)
                     grave_text.remove(g_VII)
                     grave_text.remove(g_VIII)
                     grave_text.remove(g_VIX)
-                else:
+                elif zombieSlain and zombie_head not in self.inventory:
                     if magic_sword not in self.inventory:
                         self.inventory.insert(2, zombie_head)
                     if raw_gemstone in self.inventory:

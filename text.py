@@ -149,7 +149,6 @@ class Text:
 
     @classmethod
     def redraw(cls):
-        print(Text.text_cursor)
         for i in cls.text_list:
             i.text_cursor = 0
             i.blank_text = FONT.render("", True, TERMINALGREEN)
@@ -209,7 +208,7 @@ plains_text = [p_I, p_II, p_III, p_IV, p_V, p_VI, p_VII, p_VIII, p_IX]
 t_I = Text("Вы стоите на пыльной рыночной площади", indent, TI)
 t_II = Text("тихого городка. Многие лавки и жилые дома", indent, TII)
 t_III = Text("заброшены, а редкие прохожие", indent, TIII)
-t_IV = Text("разговаривают шопотом, с опаской", indent, TIV)
+t_IV = Text("разговаривают шепотом, с опаской", indent, TIV)
 t_V = Text("поглядывая на темнеющее на севере небо.", indent, TV)
 t_VI = Text("Тишина разрывается лишь мерным", indent, TVI)
 t_VII = Text("постукиванием молота по наковальне - в", indent, TVII)
