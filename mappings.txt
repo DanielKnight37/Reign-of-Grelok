@@ -2,12 +2,14 @@
 [-] - Lower music volume
 [UP] [DOWN] - Navigation
 [ENTER] - Select
+[TAB] - Switch between Dungeon/Explore tracks
 [M] - Toggle music pause
 [N] - Next music track
-[L] - Toggle text scroll sound
+[S] - Toggle text scroll sound
 [B] - Toggle button sound
 [H] - Toggle button hover sound effect
 [T] - Toggle terminal background hum
 [W] - Toggle Fullscreen/Windowed
 [F] - Toggle FPS counter
+[L] - Change Language (Restart to apply)
 [esc] - Quit

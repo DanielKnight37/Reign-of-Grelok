@@ -9,7 +9,6 @@ class Button:
     text_hover_color = ("black")
     width = 700
     height = 40
-    font = FONT
     kb_input = False
     kb_highlighted_button = None
     index = 0
@@ -69,7 +68,7 @@ class Button:
         pos = pygame.mouse.get_pos()
         button_rect = Rect(self.x, self.y, self.width, self.height)
         button = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-        text_img = self.font.render(self.text, True, self.text_color)
+        text_img = FONT.render(self.text, True, self.text_color)
 
         if button_rect.collidepoint(pos) and self.mouse_click_not_hovered == False or self.kb_clicked is True:
             Button.current_button = self
@@ -83,7 +82,7 @@ class Button:
                 self.mouse_click_while_hovered = True
                 button.fill((self.hover_color))
                 SCREEN.blit(button, (button_rect))
-                text_img = self.font.render(self.text, True, self.text_hover_color)
+                text_img = FONT.render(self.text, True, self.text_hover_color)
                 SCREEN.blit(text_img, (self.x, self.y + 3))
                 self.clicked = True
 
@@ -97,13 +96,13 @@ class Button:
             else: # Button hover effect
                 button.fill((self.hover_color))
                 SCREEN.blit(button, (self.x, self.y))
-                text_img = self.font.render(self.text, True, self.text_hover_color)
+                text_img = FONT.render(self.text, True, self.text_hover_color)
                 SCREEN.blit(text_img, (self.x , self.y + 3))
                 self.mouse_hovered_not_clicked = True
                 if pygame.mouse.get_pressed()[0] == 0:
                     self.hover_sound()
 
-        else: # While mouse not collides with button
+        else: # While mouse doesn't collide with button rect
             if self.mouse_hovered_not_clicked is True:
                 self.mouse_hovered_not_clicked = False
 
@@ -119,7 +118,7 @@ class Button:
 
             if self.mouse_click_while_hovered is True:
                 button.fill((self.hover_color))
-                text_img = self.font.render(self.text, True, self.text_hover_color)
+                text_img = FONT.render(self.text, True, self.text_hover_color)
 
             SCREEN.blit(button, button_rect)
             SCREEN.blit(text_img, (self.x , self.y + 3))
@@ -134,62 +133,72 @@ map_y_len = len(map) - 1
 map_x_len = len(map[0]) - 1
 
 #-=Directions=-#
-north = Button(indent, II, "> Идти на север")
-south = Button(indent, III, "> Идти на юг")
-east = Button(indent, IV, "> Идти на восток")
-west = Button(indent, V, "> Идти на запад")
+north = Button(indent, II, data_text["t_north"])
+south = Button(indent, III, data_text["t_south"])
+east = Button(indent, IV, data_text["t_east"])
+west = Button(indent, V, data_text["t_west"])
 
 #-=Inventory=-#
-inventory = Button(indent, VI, "> Инвентарь")
-rusty_sword = Button(indent, I, "> Ржавый меч")
-flask = Button(indent, II, "> Питьевая фляжка")
-flask_blessed = Button(indent, II, "> Питьевая фляжка")
-zombie_head = Button(indent, III, "> Голова зомби")
-refined_gemstone = Button(indent, III, "> Драгоценный камень")
-magical_shard = Button(indent, IV, "> Магический осколок")
-magic_sword = Button(indent, II, "> Магический меч")
-brass_key = Button(indent, III, "> Медный ключ")
-raw_gemstone = Button(indent, III, "> Необработанный драгоценный камень")
-back = Button(indent, III, "> Назад")
+inventory = Button(indent, VI, data_text["t_inventory"]) 
+rusty_sword = Button(indent, I, data_text["t_rusty_sword"])
+flask = Button(indent, II, data_text["t_flask"])
+flask_blessed = Button(indent, II, data_text["t_flask_blessed"])
+zombie_head = Button(indent, III, data_text["t_zombie_head"])
+refined_gemstone = Button(indent, III, data_text["t_refined_gemstone"])
+magical_shard = Button(indent, IV, data_text["t_magical_shard"])
+magic_sword = Button(indent, II, data_text["t_magic_sword"])
+brass_key = Button(indent, III, data_text["t_brass_key"])
+raw_gemstone = Button(indent, III, data_text["t_raw_gemstone"])
+back = Button(indent, III, data_text["t_back"])
 
 #-=Plains=-#
-pI = Button(indent, I, "> (Равнина) Оглядитесь вокруг")
+pI = Button(indent, I, data_text["t_pI"])
 plains = [pI, north, south, east, west, inventory]
 
 #-=Town=-#
 lookAroundTown = False
 priestQuest = False
 brassKey = False
-tI = Button(indent, I, "> (Город) Оглядитесь вокруг")
-smith = Button(indent, II, "> Поговорить с кузнецом")
-priest = Button(indent, III, "> Поговорить со священником")
+tI = Button(indent, I, data_text["t_tI"])
+smith = Button(indent, II, data_text["t_smith"])
+priest = Button(indent, III, data_text["t_priest"])
 town = [tI, north, inventory]
 
 #-=Chapel=-#
 lookAroundChapel = False
 zombieSlain = False
-cI = Button(indent, I, "> (Часовня) Оглядитесь вокруг")
-c_west = Button(indent, II, "> Идти на запад")
-zombie = Button(indent, II, "> Ударить зомби мечом")
-grave = Button(indent, III, "> Обследовать могилу")
-c_chapel = Button(indent, II, "> Обследовать часовню")
-c_grave = Button(indent, II, "> Обследовать могилу")
+cI = Button(indent, I, data_text["t_cI"])
+c_west = Button(indent, II, data_text["t_west"])
+zombie = Button(indent, II, data_text["t_zombie"])
+grave = Button(indent, III, data_text["t_grave"])
+c_chapel = Button(indent, II, data_text["t_chapel"])
+c_grave = Button(indent, II, data_text["t_grave"])
 chapel = [cI, c_west, inventory]
 
 #-=Swamp=-#
 lookAroundSwamp = False
 wizardQuest = False
-sI = Button(indent, I, "> (Болото) Оглядитесь вокруг")
-s_east = Button(indent, II, "> Идти на восток")
-wizard = Button(indent, II, "> Поговорить с волшебником")
+sI = Button(indent, I, data_text["t_sI"])
+s_east = Button(indent, II, data_text["t_east"])
+wizard = Button(indent, II, data_text["t_wizard"])
 swamp = [sI, s_east, inventory]
 
 #-=Mountainside=-#
 lookAroundMountainside = False
 rawGemstone = False
 defeatGrelok = False
-mI = Button(indent, II, "> (Горный склон) Оглядитесь вокруг")
-m_south = Button(indent, III, "> Идти на юг")
-grelok = Button(indent, III, "> Ударить грелока мечом")
-gemstone = Button(indent, IV, "> Осмотреть сверкающий предмет")
+mI = Button(indent, I, data_text["t_mI"])
+m_south = Button(indent, II, data_text["t_south"])
+grelok = Button(indent, II, data_text["t_grelok"])
+gemstone = Button(indent, III, data_text["t_gemstone"])
 mountainside = [mI, m_south, inventory]
+if LANG in "ENG":
+    grelok.y += 25
+    gemstone.y += 25
+    for i in mountainside:
+        i.y += 25
+else:
+    grelok.y += 50
+    gemstone.y += 50
+    for i in mountainside:
+        i.y += 50

@@ -9,8 +9,7 @@ class Game:
         pygame.display.set_icon(ICON)
         self.clock = pygame.time.Clock()
         self.running = True
-        self.background_music_volume = 0.3
-        self.background_music = Music(self.background_music_volume)
+        self.background_music = Music()
         self.channel1 = pygame.mixer.Channel(1)
         self.channel1.set_volume(.1)
         self.channel1.play(TERMINALHUM, -1)
@@ -35,6 +34,7 @@ class Game:
         self.inside_chapel = False
         self.priest_current_dialogue = priest_a_dialogue
         self.smithy_current_dialogue = smithy_a_dialogue
+        self.smithy_quest = False
         self.wizard_dialogue = False
         self.wizard_met = False
         self.wizard_current_dialogue = wizard_a_dialogue
@@ -70,7 +70,7 @@ class Game:
         self.running = False
 
     def update(self):
-        global lookAroundTown, lookAroundChapel, lookAroundMountainside, lookAroundSwamp, zombieSlain, priestQuest, brassKey, rawGemstone, defeatGrelok, wizardQuest, clicked, LANGUAGE, ROOT_INDEX, TOWN_INDEX, CHAPEL_INDEX, SWAMP_INDEX, MOUNTAINSIDE_INDEX, LOCATION, FULLSCREEN, SCREEN
+        global lookAroundTown, lookAroundChapel, lookAroundMountainside, lookAroundSwamp, zombieSlain, priestQuest, brassKey, rawGemstone, defeatGrelok, wizardQuest, LANG, ROOT_INDEX, TOWN_INDEX, CHAPEL_INDEX, SWAMP_INDEX, MOUNTAINSIDE_INDEX, LOCATION, FULLSCREEN, SCREEN
         self.delta_time = time.time() - self.previous_time
         self.previous_time = time.time()
         pressed_key = pygame.key.get_pressed()
@@ -83,7 +83,7 @@ class Game:
             if pressed_key[K_UP]:
                 if Button.index >= 1:
                     LOCATION[Button.index].kb_clicked = False
-                    if Button.kb_input is True and self.button_held_timer == 0:
+                    if Button.kb_input and self.button_held_timer == 0:
                         Button.index -= 1
                     Button.kb_input_on()
                     self.button_held_timer += self.delta_time
@@ -97,10 +97,10 @@ class Game:
                     Button.kb_highlighted_button = LOCATION[Button.index]
                     LOCATION[Button.index].kb_clicked = True
 
-            if pressed_key[K_DOWN]:
+            elif pressed_key[K_DOWN]:
                 if Button.index < len(LOCATION) -1:
                     LOCATION[Button.index].kb_clicked = False
-                    if Button.kb_input is True and self.button_held_timer == 0:
+                    if Button.kb_input and self.button_held_timer == 0:
                         Button.index += 1
                     Button.kb_input_on()
                     self.button_held_timer += self.delta_time
@@ -109,6 +109,40 @@ class Game:
                         self.button_held_timer = 0.37
                     Button.kb_highlighted_button = LOCATION[Button.index]
                     LOCATION[Button.index].kb_clicked = True
+
+        if pressed_key[K_MINUS]:
+            Text.draw_tooltip(debug)
+            if Music.volume - 0.05 >= 0:
+                debug.text = f"> Music volume: [{round(Music.volume, 1)}]"
+                if Button.kb_input and self.button_held_timer == 0:
+                    Music.volume -= 0.05
+                Button.kb_input_on()
+                self.button_held_timer += self.delta_time
+                if self.button_held_timer >= 0.4:
+                    Music.volume -= 0.05
+                    self.button_held_timer = 0.37
+                pygame.mixer.music.set_volume(Music.volume)
+            else:
+                debug.text = f"> Music volume: [OFF]"
+                Music.volume = 0
+                pygame.mixer.music.set_volume(0)
+
+        elif pressed_key[K_EQUALS]:
+            Text.draw_tooltip(debug)
+            if Music.volume + 0.05 <= 1:
+                debug.text = f"> Music volume: [{round(Music.volume, 1)}]"
+                if Button.kb_input and self.button_held_timer == 0:
+                    Music.volume += 0.05
+                Button.kb_input_on()
+                self.button_held_timer += self.delta_time
+                if self.button_held_timer >= 0.4:
+                    Music.volume += 0.05
+                    self.button_held_timer = 0.37
+                pygame.mixer.music.set_volume(Music.volume)
+            else:
+                debug.text = f"> Music volume: [MAX]"
+                Music.volume = 1
+                pygame.mixer.music.set_volume(1)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -148,7 +182,7 @@ class Game:
                             self.textDisplayed = False
                             self.current_location = self.last_location
                             Text.redraw()
-                            if Button.kb_input is True:
+                            if Button.kb_input:
                                 LOCATION[Button.index].kb_clicked = True
                     else:
                         if self.show_next_page:
@@ -158,32 +192,10 @@ class Game:
                 elif event.key == pygame.K_m:
                     Music.pause()
 
-                elif event.key == pygame.K_EQUALS:
-                    Text.draw_tooltip(debug)
-                    if self.background_music_volume + 0.05 <= 1:
-                        debug.text = f"> Music volume: [{round(self.background_music_volume, 1)}]"
-                        self.background_music_volume += 0.05
-                        pygame.mixer.music.set_volume(self.background_music_volume)
-                    else:
-                        debug.text = f"> Music volume: [MAX]"
-                        self.background_music_volume = 1
-                        pygame.mixer.music.set_volume(1)
-
-                elif event.key == pygame.K_MINUS:
-                    Text.draw_tooltip(debug)
-                    if self.background_music_volume - 0.05 >= 0:
-                        debug.text = f"> Music volume: [{round(self.background_music_volume, 1)}]"
-                        self.background_music_volume -= 0.05
-                        pygame.mixer.music.set_volume(self.background_music_volume)
-                    else:
-                        debug.text = f"> Music volume: [OFF]"
-                        self.background_music_volume = 0
-                        pygame.mixer.music.set_volume(0)
-
                 elif event.key == pygame.K_ESCAPE:
                     self.powerdown()
 
-                elif event.key == pygame.K_l:
+                elif event.key == pygame.K_s:
                     Text.draw_tooltip(debug)
                     if TEXT_SCROLL_SOUND.get_volume() == 0:
                         debug.text = "> Text scroll sound: [ON]"
@@ -245,10 +257,23 @@ class Game:
                     else:
                         self.fps_counter = True
 
+                elif event.key == pygame.K_l:
+                    Text.change_lang()
+                    debug.text = f"> Language: [{config['Settings']['Language']}] Restart terminal to apply changes..."
+                    Text.draw_tooltip(debug)
+
+                elif event.key == pygame.K_TAB:
+                    Text.draw_tooltip(debug)
+                    self.background_music.change_path()
+
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP:
                     self.button_held_timer = 0
-                if event.key == pygame.K_DOWN:
+                elif event.key == pygame.K_DOWN:
+                    self.button_held_timer = 0
+                elif event.key == pygame.K_MINUS:
+                    self.button_held_timer = 0
+                elif event.key == pygame.K_EQUALS:
                     self.button_held_timer = 0
 
             elif event.type == self.background_music.track_end:
@@ -280,7 +305,7 @@ class Game:
                 self.go_north()
 
             if south.action:
-                if lookAroundTown is True:
+                if lookAroundTown:
                     north.y = IV
                 Text.draw_tooltip(heading_south)
                 self.change_location(town, TOWN_INDEX)
@@ -306,7 +331,7 @@ class Game:
             self.draw_list(town)
             Text.header()
 
-            if lookAroundTown is True:
+            if lookAroundTown:
                 inventory.y = V
                 north.y = IV
             else:
@@ -333,22 +358,30 @@ class Game:
                 Text.draw_tooltip(smithy_t)
                 self.display_text()
                 if magical_shard in self.inventory:
+                    self.smithy_quest = True
                     self.smithy_current_dialogue = smithy_b_dialogue
-                    self.inventory.remove(rusty_sword)
+                    if rusty_sword in self.inventory:
+                        self.inventory.remove(rusty_sword)
                     self.inventory.remove(refined_gemstone)
                     self.inventory.remove(magical_shard)
                     flask.y = I
                     flask_blessed.y = I
-                    grelok.text = "> Ударить грелока магическим мечом"
+                    grelok.text = data_text["t_grelok_b"]
                     if brass_key in self.inventory:
-                        self.inventory.insert(1, magic_sword)
+                        if magic_sword not in self.inventory:
+                            self.inventory.insert(1, magic_sword)
+                        magic_sword.y = II
                         brass_key.y = III
                     elif zombie_head in self.inventory:
-                        self.inventory.insert(2, magic_sword)
+                        if magic_sword not in self.inventory:
+                            self.inventory.insert(2, magic_sword)
                         zombie_head.y = II
                         magic_sword.y = III
                     else:
-                        self.inventory.insert(1, magic_sword)
+                        if magic_sword not in self.inventory:
+                            self.inventory.insert(1, magic_sword)
+                        else:
+                            magic_sword.y = II
                 else:
                     self.smithy_current_dialogue = smithy_a_dialogue
 
@@ -357,20 +390,34 @@ class Game:
                 self.priest_dialogue = True
                 Text.draw_tooltip(priest_t)
                 self.display_text()
-                if priestQuest is True:
+                if priestQuest:
                     if zombie_head in self.inventory:
                         self.inventory.remove(zombie_head)
-                        chapel_text.insert(10, c_XII_alt)
+                        c_IV.text = data_text["t_c_IV_door_unlocked"]
+                        c_V.text = data_text["t_c_V_door_unlocked"]
+                        if LANG in "ENG":
+                            c_XI.text = data_text["t_c_doors"]
+                            c_XIII.text = data_text["t_c_XIII"]
+                        else:
+                            c_XII.text = data_text["t_c_doors"]
+                            c_XIV.text = data_text["t_c_XIV"]
                         c_XIV.y = TXIV
                         if raw_gemstone in self.inventory:
                             self.inventory.insert(2, brass_key)
                             brass_key.y = III
                             raw_gemstone.y = IV
                         elif refined_gemstone in self.inventory:
-                            self.inventory.insert(4, brass_key)
-                            refined_gemstone.y = III
-                            magical_shard.y = IV
-                            brass_key.y = V
+                            if magic_sword in self.inventory:
+                                self.inventory.insert(4, brass_key)
+                                refined_gemstone.y = II
+                                magical_shard.y = III
+                                magic_sword.y = IV
+                                brass_key.y = V
+                            else:
+                                self.inventory.insert(4, brass_key)
+                                refined_gemstone.y = III
+                                magical_shard.y = IV
+                                brass_key.y = V
                         elif magic_sword in self.inventory:
                             self.inventory.insert(2, brass_key)
                             magic_sword.y = II
@@ -379,7 +426,7 @@ class Game:
                         brassKey = True
                         lookAroundChapel = False
                         chapel.remove(grave)
-                        if Button.kb_input is True:
+                        if Button.kb_input:
                             CHAPEL_INDEX = 1
                     else:
                         self.priest_current_dialogue = pr_c_text
@@ -393,16 +440,16 @@ class Game:
             self.draw_list(chapel)
             Text.header()
 
-            if lookAroundChapel is True and brassKey is True:
+            if lookAroundChapel and brassKey:
                 inventory.y = IV
                 c_west.y = III
             elif brass_key in self.inventory:
                 inventory.y = III
                 c_west.y = II
-            elif lookAroundChapel is True and zombieSlain is True:
+            elif lookAroundChapel and zombieSlain:
                 inventory.y = IV
                 c_west.y = III
-            elif lookAroundChapel is True:
+            elif lookAroundChapel:
                 inventory.y = V
                 c_west.y = IV
             else:
@@ -414,7 +461,7 @@ class Game:
                 self.display_text()
                 self.grave_text = False
                 self.inside_chapel = False
-                if lookAroundChapel == False and zombieSlain is True:
+                if lookAroundChapel == False and zombieSlain:
                     chapel.insert(1, c_chapel)
                     lookAroundChapel = True
                 if lookAroundChapel == False and zombieSlain == False:
@@ -428,11 +475,17 @@ class Game:
 
             if zombie.action:
                 if zombieSlain == False:
-                    chapel_text.remove(c_XII)
-                    grave_text.remove(g_III)
-                    grave_text.remove(g_IV)
-                    grave_text.append(g_III_alt)
-                    grave_text.append(g_IV_alt)
+                    if LANG in "ENG":
+                        c_XI.text = data_text["t_c_XIII"]
+                        c_XIII.text = " "
+                        g_II.text = data_text["t_g_IIb"]
+                        g_III.text = data_text["t_g_IIIb"]
+                        g_IV.text = data_text["t_g_IVb"]
+                    else:
+                        c_XII.text = data_text["t_c_XIV"]
+                        c_XIV.text = " "
+                        g_III.text = data_text["t_g_IIIb"]
+                        g_IV.text = data_text["t_g_IVb"]
                     for i in grave_text_II:
                         grave_text.append(i)
                     c_XIV.y = TXII
@@ -457,13 +510,19 @@ class Game:
                         self.inventory.insert(2, zombie_head)
                     if raw_gemstone in self.inventory:
                         raw_gemstone.y = IV
+                    elif magic_sword in self.inventory and refined_gemstone in self.inventory:
+                        self.inventory.insert(1, zombie_head)
+                        zombie_head.y = II
+                        refined_gemstone.y = III
+                        magical_shard.y = IV
+                        magic_sword.y = V
                     elif refined_gemstone in self.inventory:
                         refined_gemstone.y = IV
                         magical_shard.y = V
                     elif magic_sword in self.inventory:
                         self.inventory.insert(1, zombie_head)
-                        magic_sword.y = III
                         zombie_head.y = II
+                        magic_sword.y = III
                     priestQuest = True
 
             if c_chapel.action:
@@ -486,7 +545,7 @@ class Game:
             self.draw_list(swamp)
             Text.header()
 
-            if lookAroundSwamp is True:
+            if lookAroundSwamp:
                 inventory.y = IV
                 s_east.y = III
             else:
@@ -496,7 +555,8 @@ class Game:
                 Text.draw_tooltip(look_around)
                 self.wizard_dialogue = False
                 self.display_text()
-                self.show_next_page = True
+                if LANG in "RUS":
+                    self.show_next_page = True
                 if lookAroundSwamp == False:
                     swamp.insert(1, wizard)
                     lookAroundSwamp = True
@@ -505,21 +565,44 @@ class Game:
                 Text.draw_tooltip(wizard_t)
                 self.wizard_dialogue = True
                 self.display_text()
-                if rawGemstone is True:
-                    if raw_gemstone in self.inventory:
+                if rawGemstone:
+                    if raw_gemstone in self.inventory or self.smithy_quest:
                         self.show_next_page = True
                         self.wizard_current_dialogue = wizard_c_dialogue
                         self.wizard_current_dialogue_next_page = wizard_cII_dialogue
-                        self.inventory.remove(raw_gemstone)
+                        self.smithy_quest = False
+                        if raw_gemstone in self.inventory:
+                            self.inventory.remove(raw_gemstone)
                         if brass_key in self.inventory:
-                            self.inventory.insert(2, refined_gemstone)
-                            self.inventory.insert(3, magical_shard)
-                            brass_key.y = V
+                            if magic_sword in self.inventory:
+                                self.inventory.insert(1, refined_gemstone)
+                                self.inventory.insert(2, magical_shard)
+                                refined_gemstone.y = II
+                                magical_shard.y = III
+                                magic_sword.y = IV
+                                brass_key.y = V
+                            else:
+                                self.inventory.insert(2, refined_gemstone)
+                                self.inventory.insert(3, magical_shard)
+                                brass_key.y = V
                         elif zombie_head in self.inventory:
-                            self.inventory.insert(3, refined_gemstone)
-                            self.inventory.insert(4, magical_shard)
-                            refined_gemstone.y = IV
-                            magical_shard.y = V
+                            if magic_sword in self.inventory:
+                                self.inventory.insert(2, refined_gemstone)
+                                self.inventory.insert(3, magical_shard)
+                                refined_gemstone.y = III
+                                magical_shard.y = IV
+                                magic_sword.y = V
+                            else:
+                                self.inventory.insert(3, refined_gemstone)
+                                self.inventory.insert(4, magical_shard)
+                                refined_gemstone.y = IV
+                                magical_shard.y = V
+                        elif magic_sword in self.inventory:
+                            self.inventory.insert(1, refined_gemstone)
+                            self.inventory.insert(2, magical_shard)
+                            refined_gemstone.y = II
+                            magical_shard.y = III
+                            magic_sword.y = IV
                         else:
                             self.inventory.insert(2, refined_gemstone)
                             self.inventory.insert(3, magical_shard)
@@ -531,9 +614,12 @@ class Game:
                         self.wizard_current_dialogue = wizard_b_dialogue
                         self.wizard_current_dialogue_next_page = wizard_b_dialogue
                     else:
-                        self.show_next_page = True
-                        self.wizard_current_dialogue = wizard_a_dialogue
-                        self.wizard_current_dialogue_next_page = wizard_aII_dialogue
+                        if LANG in "RUS":
+                            self.show_next_page = True
+                            self.wizard_current_dialogue = wizard_a_dialogue
+                            self.wizard_current_dialogue_next_page = wizard_aII_dialogue
+                        else:
+                            self.wizard_current_dialogue_next_page = wizard_a_dialogue
                     self.wizard_met = True
 
             if s_east.action:
@@ -549,19 +635,30 @@ class Game:
             self.draw_list(mountainside)
             Text.header_mt()
 
-            if lookAroundMountainside is True and rawGemstone is True:
-                m_south.y = IV
-                inventory.y = V
-            elif lookAroundMountainside is True:
-                m_south.y = V
-                inventory.y = VI
+            if lookAroundMountainside and rawGemstone:
+                if LANG in "ENG":
+                    m_south.y = III+25
+                    inventory.y = IV+25
+                else:
+                    m_south.y = IV
+                    inventory.y = V
+            elif lookAroundMountainside:
+                if LANG in "ENG":
+                    m_south.y = IV+25
+                    inventory.y = V+25
+                else:
+                    m_south.y = V
+                    inventory.y = VI
             else:
-                inventory.y = IV
+                if LANG in "ENG":
+                    inventory.y = III+25
+                else:
+                    inventory.y = IV
 
             if mI.action:
                 Text.draw_tooltip(look_around)
                 if defeatGrelok:
-                    look_around.text = "> Спасибо за игру!"
+                    look_around.text = data_text["t_end_thx"]
                     self.change_location(plains, ROOT_INDEX)
                     self.go_south()
                 else:
@@ -584,13 +681,13 @@ class Game:
                     north.action = False
                     mountainside.clear()
                     plains.clear()
-                    mI.text = "> ПОБЕДА!"
-                    pI.text = "> Игра закончена"
+                    mI.text = data_text["t_end_win"]
+                    pI.text = data_text["t_end_over"]
                     mountainside.append(mI)
                     plains.append(pI)
                 else:
                     Text.draw_tooltip(grelok_t)
-                    if Button.kb_input is True:
+                    if Button.kb_input:
                         LOCATION[Button.index].kb_clicked = True
 
             if gemstone.action:
@@ -617,7 +714,7 @@ class Game:
             if inventory.action:
                 self.open_inventory()
 ###-=Inventory=-###
-        if self.inventoryOpen is True:
+        if self.inventoryOpen:
             LOCATION = self.inventory
             if self.last_location == "mountainside":
                 Text.header_mt()
@@ -645,7 +742,7 @@ class Game:
                 Text.draw_tooltip(raw_gem_inv)
         
             if back.action:
-                if Button.kb_input is True:
+                if Button.kb_input:
                     back.kb_clicked = False
                     if self.last_location == "plains":
                         self.change_location(plains, ROOT_INDEX)
@@ -663,9 +760,9 @@ class Game:
                 Button.close_inventory()
                 self.current_location = self.last_location
 ###-=Text=-###
-        if self.textDisplayed is True:
+        if self.textDisplayed:
             self.scroll_sound_timer -= self.delta_time
-            if self.scroll_sound_timer <= 0 and Text.text_in_progress is True:
+            if self.scroll_sound_timer <= 0 and Text.text_in_progress:
                 self.channel2.set_volume(.1)
                 self.channel2.play(TEXT_SCROLL_SOUND)
                 self.scroll_sound_timer = 0.75
@@ -678,17 +775,17 @@ class Game:
                 Text.draw_text_list(plains_text)
 
             elif self.last_location == "town":
-                if self.blacksmith_dialogue is True:
+                if self.blacksmith_dialogue:
                     Text.draw_text_list(self.smithy_current_dialogue)
-                elif self.priest_dialogue is True:
+                elif self.priest_dialogue:
                     Text.draw_text_list(self.priest_current_dialogue)
                 else:
                     Text.draw_text_list(town_text)
 
             elif self.last_location == "chapel":
-                if self.grave_text is True:
+                if self.grave_text:
                     Text.draw_text_list(grave_text)
-                elif self.inside_chapel is True:
+                elif self.inside_chapel:
                     Text.draw_text_list(ch_text)
                 else:
                     Text.draw_text_list(chapel_text)
@@ -703,16 +800,25 @@ class Game:
                     Text.draw_text_list(mt_text)
 
             elif self.last_location == "swamp":
-                if self.wizard_dialogue is True:
-                    if self.show_next_page:
-                        Text.draw_text_list(self.wizard_current_dialogue)
+                if self.wizard_dialogue:
+                    if LANG in "ENG":
+                        if self.show_next_page:
+                            Text.draw_text_list(self.wizard_current_dialogue)
+                        else:
+                            Text.draw_text_list(self.wizard_current_dialogue_next_page)
                     else:
-                        Text.draw_text_list(self.wizard_current_dialogue_next_page)
+                        if self.show_next_page:
+                            Text.draw_text_list(self.wizard_current_dialogue)
+                        else:
+                            Text.draw_text_list(self.wizard_current_dialogue_next_page)
                 else:
-                    if self.show_next_page:
-                        Text.draw_text_list(bog_text)
+                    if LANG in "ENG":
+                            Text.draw_text_list(bog_text)
                     else:
-                        Text.draw_text_list(bog_text_b)
+                        if self.show_next_page:
+                            Text.draw_text_list(bog_text)
+                        else:
+                            Text.draw_text_list(bog_text_b)
         else:
             if Text.text_redrawn == False:
                 Text.redraw()
@@ -739,7 +845,7 @@ class Game:
     def change_location(self, destination, location_index):
         self.location_index_check()
         Button.index = location_index
-        if Button.kb_input is True:
+        if Button.kb_input:
             destination[Button.index].kb_clicked = True
 
     def go_north(self):
@@ -782,10 +888,14 @@ class Game:
             back.y = VII
 
         if self.current_location == "mountainside":
-            for i in self.inventory:
-                i.y += 50
+            if LANG in "ENG":
+                for i in self.inventory:
+                    i.y += 25
+            else:
+                for i in self.inventory:
+                    i.y += 50
 
-        if Button.kb_input is True:
+        if Button.kb_input:
             self.inventory[Button.index].kb_clicked = True
 
         self.inventoryOpen = True
@@ -794,8 +904,12 @@ class Game:
 
     def close_inventory(self):
         if self.last_location == "mountainside":
-            for i in self.inventory:
-                i.y -= 50
+            if LANG in "ENG":
+                for i in self.inventory:
+                    i.y -= 25
+            else:
+                for i in self.inventory:
+                    i.y -= 50
         self.inventoryOpen = False 
 
     def location_index_check(self):
@@ -818,8 +932,8 @@ class Game:
 
     def show_fps(self, display):
         global FONT, TERMINALGREEN
-        self.text = FONT.render(str(round(self.clock.get_fps())), False, (TERMINALGREEN))
-        display.blit(self.text, (1230, 10))
+        fps = FONT.render(str(round(self.clock.get_fps())), False, (TERMINALGREEN))
+        display.blit(fps, (1230, 10))
 
     def close(self):
         pygame.quit()
