@@ -451,7 +451,6 @@ wizard_cII_IX = Text(data_text["t_wizard_cII_IX"], indent, TIX)
 wizard_cII_X = Text(data_text["t_wizard_cII_X"], indent, TX)
 wizard_cII_dialogue = [wizard_cII_I, wizard_cII_II, wizard_cII_III, wizard_cII_IV, wizard_cII_V, wizard_cII_VI, wizard_cII_VII, wizard_cII_VIII, wizard_cII_IX, wizard_cII_X]
 
-# data_text["t_"]
 #-=Wizard Dialogue D=-#
 wizard_d_I = Text(data_text["t_wizard_d_I"], indent, TI)
 wizard_d_II = Text(data_text["t_wizard_d_II"], indent, TII)
