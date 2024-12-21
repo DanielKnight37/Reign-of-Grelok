@@ -7,7 +7,7 @@ class Button:
     hover_color = (TERMINALGREEN_H)
     text_color = (TERMINALGREEN)
     text_hover_color = ("black")
-    width = 700
+    width = 615
     height = 40
     kb_input = False
     kb_highlighted_button = None

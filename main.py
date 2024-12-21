@@ -52,7 +52,7 @@ class Game:
         self.close()
 
     def powerdown(self):
-        fadeout = pygame.Surface((SCREENWIDTH, SCREENHEIGHT))
+        fadeout = pygame.Surface((RESOLUTION))
         fadeout = fadeout.convert()
         fadeout.fill("black")
         self.current_location = None
@@ -245,11 +245,11 @@ class Game:
                     if FULLSCREEN:
                         debug.text = "> Display mode: [WINDOWED]"
                         FULLSCREEN = False
-                        SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
+                        SCREEN = pygame.display.set_mode((RESOLUTION))
                     else:
                         debug.text = "> Display mode: [FULLSCREEN]"
                         FULLSCREEN = True
-                        SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT), pygame.FULLSCREEN)
+                        SCREEN = pygame.display.set_mode((RESOLUTION), pygame.FULLSCREEN)
 
                 elif event.key == pygame.K_f:
                     if self.fps_counter:

@@ -20,12 +20,13 @@ data_text = json.load(json_text)
 json_text.close()
 
 SCREENWIDTH, SCREENHEIGHT = 1280, 720
+RESOLUTION = (SCREENWIDTH, SCREENHEIGHT)
 FULLSCREEN = True
-SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT), pygame.FULLSCREEN)
+SCREEN = pygame.display.set_mode(RESOLUTION, pygame.FULLSCREEN)
 FPS = 85
 TERMINALGREEN = (26,255,128)
 TERMINALGREEN_H = (26,255,128,125)
-FONT = pygame.font.Font(fr"{application_path}\src\font\Fixedsys.ttf", 30)
+FONT = pygame.font.Font(fr"{application_path}\src\font\Fixedsys.otf", 30)
 VERSION = data_text["t_game_version"]
 BACKGROUND = pygame.image.load(fr"{application_path}\src\background\background.png").convert()
 ICON = pygame.image.load(fr"{application_path}\src\icon\vault_boy.png")
